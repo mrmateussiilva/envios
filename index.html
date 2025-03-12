@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Envios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+
+    <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-bold mb-4">Cadastro de Envios</h2>
+
+        <!-- Botão para carregar JSON -->
+        <button onclick="carregarDados()" class="bg-blue-500 text-white px-4 py-2 rounded">Carregar Dados</button>
+
+        <!-- Tabela -->
+        <table class="w-full bg-white border rounded-lg mt-4">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="p-2">Nome</th>
+                    <th class="p-2">Forma de Envio</th>
+                    <th class="p-2">Cidade</th>
+                    <th class="p-2">Status</th>
+                    <th class="p-2">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabela">
+                <!-- Linhas geradas dinamicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const dados = {
+    "relatorios_envios": {
+        "rodoviaria": [
+            {
+                "empresa": "Viação Pretti",
+                "horario": "11:30",
+                "liberar": "Dia anterior",
+                "destinos": [
+                    {"nome": "Ana Paula", "tipo": "Sublimação", "cidade": "Itaguaçu/ES"}
+                ]
+            },
+            {
+                "empresa": "Viação Aguia Branca",
+                "horario": "11:30",
+                "liberar": "Dia anterior",
+                "destinos": [
+                    {"nome": "Elisangela de Andrade", "tipo": "Totem", "cidade": "Cachoeiro de Itapemirim/ES"},
+                    {"nome": "Sheila Santos", "tipo": "Totem", "cidade": "Mimoso do Sul/ES"},
+                    {"nome": "Luciana Lucas", "tipo": "Sublimação+Totem", "cidade": "Cachoeiro de Itapemirim/ES"},
+                    {"nome": "Ivana Borana", "tipo": "Sublimação", "cidade": "São Mateus/ES"}
+                ]
+            }
+        ],
+        "correios": [
+            {
+                "horario": "14:30",
+                "envios": [
+                    {"nome": "Dellana Saig", "tipo": "Sublimação+Totem", "metodo": "Sedex", "cidade": "São Mateus/ES"},
+                    {"nome": "Mimos e Delicias", "tipo": "Sublimação", "metodo": "Sedex", "cidade": "Cachoeiro de Itapemirim/ES"},
+                    {"nome": "Julio Cesar de Castro", "tipo": "Sublimação", "metodo": "Sedex", "cidade": "Guarapari/ES"},
+                    {"nome": "Liniker Alberto", "tipo": "Sublimação", "metodo": "Sedex", "cidade": "Guarapari/ES"},
+                    {"nome": "Bianca C Oliveira", "tipo": "Totem", "metodo": "PAC", "cidade": "São Paulo/ES"},
+                    {"nome": "Joci Ventura", "tipo": "Sublimação", "metodo": "Sedex", "cidade": "Mantenópolis/ES"},
+                    {"nome": "Karoline Gouvea", "tipo": "Totem", "metodo": "Sedex", "cidade": "Paraná/ES"},
+                    {"nome": "Marcia Regina", "tipo": "Sublimação", "metodo": "Sedex", "cidade": "Brejetuba/ES", "obs": "Confirmar"}
+                ]
+            }
+        ],
+        "retirada": [
+            {
+                "horario": "16:30",
+                "liberacao": "Até 14h mesmo dia",
+                "clientes": [
+                    {"nome": "Juliana Mili", "tipo": "Sublimação+Totem", "cidade": "João Neiva/ES"},
+                    {"nome": "Leidimar Felisberto", "tipo": "Sublimação+Totem", "cidade": "Vitória/ES"},
+                    {"nome": "Muita Farra", "tipo": "Sublimação+Totem", "cidade": "Vitória/ES"},
+                    {"nome": "Assoc. Moradores Riviera", "tipo": "Sublimação", "cidade": "Vila Velha/ES"},
+                    {"nome": "Mayara Almeida", "tipo": "Sublimação+Totem", "cidade": "Aracruz/ES"}
+                ]
+            }
+        ]
+    }
+}
+
+
+        function carregarDados() {
+            const tabela = document.querySelector("#tabela");
+            tabela.innerHTML = "";
+            
+            function adicionarLinha(tipo, nome, cidade, status) {
+                const linha = `<tr>
+                    <td class='p-2 border'>${nome}</td>
+                    <td class='p-2 border'>${tipo}</td>
+                    <td class='p-2 border'>${cidade}</td>
+                    <td class='p-2 border status'>${status}</td>
+                    <td class='p-2 border'>
+                        <button onclick="mudarStatus(this, 'Pronto')" class='bg-yellow-400 text-white px-2 py-1 rounded'>Pronto</button>
+                        <button onclick="mudarStatus(this, 'Entregue')" class='bg-green-500 text-white px-2 py-1 rounded'>Entregue</button>
+                    </td>
+                </tr>`;
+                tabela.innerHTML += linha;
+            }
+            
+            dados.relatorios_envios.rodoviaria.forEach(envio => {
+                envio.destinos.forEach(destino => {
+                    adicionarLinha("Rodoviária", destino.nome, destino.cidade, destino.status);
+                });
+            });
+            dados.relatorios_envios.rodoviaria.forEach(envio => {
+                envio.destinos.forEach(destino => {
+                    adicionarLinha("Retirada", destino.nome, destino.cidade, destino.status);
+                });
+            });
+            
+            dados.relatorios_envios.correios.forEach(envio => {
+                envio.envios.forEach(destino => {
+                    adicionarLinha("Correios", destino.nome, destino.cidade, destino.status);
+                });
+            });
+        }
+
+        function mudarStatus(botao, novoStatus) {
+            const linha = botao.parentElement.parentElement;
+            linha.querySelector(".status").innerText = novoStatus;
+            if (novoStatus == "Pronto"){
+                linha.classList.remove("bg-green-500")
+
+                linha.classList.add("bg-yellow-400")
+
+            }else if (novoStatus == "Entregue"){
+                linha.classList.remove("bg-yellow-400")
+
+                linha.classList.add("bg-green-500")
+            }
+
+        }
+    </script>
+
+</body>
+</html>
