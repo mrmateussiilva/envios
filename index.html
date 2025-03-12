@@ -3,32 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciar Envios</title>
+    <title>Gerenciar Envios - Kanban</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-6">
 
     <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-xl font-bold mb-4">Cadastro de Envios</h2>
-
-        <!-- Botão para carregar JSON -->
+        <h2 class="text-xl font-bold mb-4">Quadro Kanban de Envios</h2>
         <button onclick="carregarDados()" class="bg-blue-500 text-white px-4 py-2 rounded">Carregar Dados</button>
-
-        <!-- Tabela -->
-        <table class="w-full bg-white border rounded-lg mt-4">
-            <thead>
-                <tr class="bg-gray-200">
-                    <th class="p-2">Nome</th>
-                    <th class="p-2">Forma de Envio</th>
-                    <th class="p-2">Cidade</th>
-                    <th class="p-2">Status</th>
-                    <th class="p-2">Ações</th>
-                </tr>
-            </thead>
-            <tbody id="tabela">
-                <!-- Linhas geradas dinamicamente -->
-            </tbody>
-        </table>
+        
+        <div class="grid grid-cols-3 gap-4 mt-6">
+            <div class="bg-gray-200 p-4 rounded-lg" id="pendente">
+                <h3 class="font-bold mb-2">Pendente</h3>
+            </div>
+            <div class="bg-yellow-200 p-4 rounded-lg" id="pronto">
+                <h3 class="font-bold mb-2">Pronto</h3>
+            </div>
+            <div class="bg-green-200 p-4 rounded-lg" id="entregue">
+                <h3 class="font-bold mb-2">Entregue</h3>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -86,57 +80,44 @@
     }
 }
 
-
         function carregarDados() {
-            const tabela = document.querySelector("#tabela");
-            tabela.innerHTML = "";
+            document.getElementById("pendente").innerHTML = "<h3 class='font-bold mb-2'>Pendente</h3>";
+            document.getElementById("pronto").innerHTML = "<h3 class='font-bold mb-2'>Pronto</h3>";
+            document.getElementById("entregue").innerHTML = "<h3 class='font-bold mb-2'>Entregue</h3>";
             
-            function adicionarLinha(tipo, nome, cidade, status) {
-                const linha = `<tr>
-                    <td class='p-2 border'>${nome}</td>
-                    <td class='p-2 border'>${tipo}</td>
-                    <td class='p-2 border'>${cidade}</td>
-                    <td class='p-2 border status'>${status}</td>
-                    <td class='p-2 border'>
-                        <button onclick="mudarStatus(this, 'Pronto')" class='bg-yellow-400 text-white px-2 py-1 rounded'>Pronto</button>
-                        <button onclick="mudarStatus(this, 'Entregue')" class='bg-green-500 text-white px-2 py-1 rounded'>Entregue</button>
-                    </td>
-                </tr>`;
-                tabela.innerHTML += linha;
+            function adicionarCard(nome, tipo, cidade, status) {
+                const card = document.createElement("div");
+                card.className = "bg-white p-2 mb-2 rounded shadow-md";
+                card.innerHTML = `<p><strong>${nome}</strong> - ${tipo} - ${cidade}</p>
+                    <button onclick="mudarStatus(this, 'Pronto')" class='bg-yellow-400 text-white px-2 py-1 rounded mr-2'>Pronto</button>
+                    <button onclick="mudarStatus(this, 'Entregue')" class='bg-green-500 text-white px-2 py-1 rounded'>Entregue</button>`;
+                document.getElementById(status.toLowerCase()).appendChild(card);
             }
             
             dados.relatorios_envios.rodoviaria.forEach(envio => {
                 envio.destinos.forEach(destino => {
-                    adicionarLinha("Rodoviária", destino.nome, destino.cidade, destino.status);
-                });
-            });
-            dados.relatorios_envios.rodoviaria.forEach(envio => {
-                envio.destinos.forEach(destino => {
-                    adicionarLinha("Retirada", destino.nome, destino.cidade, destino.status);
+                    adicionarCard(destino.nome, destino.tipo, destino.cidade, destino.status);
                 });
             });
             
             dados.relatorios_envios.correios.forEach(envio => {
                 envio.envios.forEach(destino => {
-                    adicionarLinha("Correios", destino.nome, destino.cidade, destino.status);
+                    adicionarCard(destino.nome, destino.tipo, destino.cidade, destino.status);
+                });
+            });
+            dados.relatorios_envios.retirada.forEach(envio => {
+                envio.envios.forEach(destino => {
+                    adicionarCard(destino.nome, destino.tipo, destino.cidade, destino.status);
                 });
             });
         }
 
         function mudarStatus(botao, novoStatus) {
-            const linha = botao.parentElement.parentElement;
-            linha.querySelector(".status").innerText = novoStatus;
-            if (novoStatus == "Pronto"){
-                linha.classList.remove("bg-green-500")
-
-                linha.classList.add("bg-yellow-400")
-
-            }else if (novoStatus == "Entregue"){
-                linha.classList.remove("bg-yellow-400")
-
-                linha.classList.add("bg-green-500")
-            }
-
+            const card = botao.parentElement;
+            card.remove();
+            card.querySelector("button").remove();
+            card.innerHTML += `<p class='text-sm text-gray-500'>Status: ${novoStatus}</p>`;
+            document.getElementById(novoStatus.toLowerCase()).appendChild(card);
         }
     </script>
 
